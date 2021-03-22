@@ -18,7 +18,7 @@
 #define MAX_SOURCE_SIZE (0x100000)
 
 
-int KernelExecutor::execute(std::string kernel_filepath, std::string matrix_filepath, int workgroup_size) {
+int KernelExecutor::execute(std::string kernel_filepath, std::string matrix_filepath, int workgroup_size, bool transposed_method) {
     Tester tester;
     std::vector<Matrix> tested_matrixes = tester.readMatrixFromFile(matrix_filepath);
 
@@ -110,7 +110,7 @@ int KernelExecutor::execute(std::string kernel_filepath, std::string matrix_file
 }
 
 
-int KernelExecutor::execute(std::string kernel_filepath, const int matrix_cols, const int matrix_rows, int workgroup_size) {
+int KernelExecutor::execute(std::string kernel_filepath, const int matrix_cols, const int matrix_rows, int workgroup_size, bool transposed_method) {
     Tester tester;
 
     Matrix matrix1(matrix_cols, matrix_rows);
@@ -120,6 +120,11 @@ int KernelExecutor::execute(std::string kernel_filepath, const int matrix_cols, 
     matrix1.fillRandMatrix();
     matrix2.fillRandMatrix();
     matrix3.fillRandMatrix();
+
+    if (transposed_method)
+    {
+        transposeMatrix(&matrix2, "TransposeMatrix.cl", workgroup_size);
+    }
 
 
     // Load the kernel source code into the array source_str
@@ -199,13 +204,77 @@ int KernelExecutor::execute(std::string kernel_filepath, const int matrix_cols, 
 
 
 
-    // не хватило ума написать executor внутри тестера
-    if (error_code == 0)
-    {
-        printf("TEST: %s --- MATRIX SIZE: %dx%d --- EXECUTION TIME: %0.5f ms ---\n", kernel_filepath.c_str(),
-            matrix1.getColSize(), matrix1.getColSize(), exec_time);
-    }
+    Matrix valid_matrix = Matrix::multiplicate(matrix1, matrix2);
 
+    tester.isAnswerCorrect(valid_matrix, matrix3, kernel_filepath, error_code, exec_time);
+
+
+    return error_code;
+}
+
+int KernelExecutor::transposeMatrix(Matrix* input_matrix, std::string kernel_filepath, int workgroup_size)
+{
+    Matrix output_matrix(input_matrix->getColSize(), input_matrix->getRowSize());
+
+    std::ifstream sourceFile(kernel_filepath);
+    std::string sourceCode(std::istreambuf_iterator<char>(sourceFile), (std::istreambuf_iterator<char>()));
+
+    int error_code = 0;
+
+    // Get platform and device information
+    std::vector<cl::Platform> platforms;
+    error_code = cl::Platform::get(&platforms);
+    cl::Platform platform = platforms[0];
+
+    std::vector<cl::Device> devices;
+    error_code = platform.getDevices(CL_DEVICE_TYPE_GPU, &devices);
+
+
+    // Create an OpenCL context
+    // cl::Context context(NULL, 1, &device_id, NULL, NULL, &ret);
+    cl::Context context(devices[0]);
+
+    // Create a command queue
+    cl::CommandQueue command_queue(context, devices[0], CL_QUEUE_PROFILING_ENABLE, &error_code);
+
+    // Create memory buffers on the device for each vector
+    cl::Buffer in_matrix(context, CL_MEM_READ_ONLY, (*input_matrix).getVector().size() * sizeof(float));
+    cl::Buffer out_matrix(context, CL_MEM_READ_ONLY, output_matrix.getVector().size() * sizeof(float));
+
+    error_code = command_queue.enqueueWriteBuffer(in_matrix, CL_TRUE, 0, (*input_matrix).getVector().size() * sizeof(float), (*input_matrix).getVector().data());
+
+    // Create a program from the kernel source
+    cl::Program::Sources source(1, std::make_pair(sourceCode.c_str(), sourceCode.length() + 1));
+    cl::Program program(context, source, &error_code);
+
+    // Build the program
+    program.build();
+
+    // Create the OpenCL kernel
+    cl::Kernel kernel(program, "transpose");
+
+    const int COLS = (*input_matrix).getColSize();
+    const int ROWS = (*input_matrix).getRowSize();
+    
+
+    // Set the arguments of the kernel
+    error_code = kernel.setArg(0, in_matrix);
+    error_code = kernel.setArg(1, out_matrix);
+    error_code = kernel.setArg(2, ROWS);
+    error_code = kernel.setArg(3, COLS);
+
+
+    // Execute the OpenCL kernel on the list
+    const int TS = workgroup_size;
+    const size_t local[2] = { TS, TS };
+    const size_t global[2] = { COLS, ROWS };
+
+    // ERROR CODE -38 || -36
+    error_code = command_queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(global[0], global[1]), cl::NDRange(local[0], local[1]));
+    error_code = command_queue.finish();
+    error_code = command_queue.enqueueReadBuffer(out_matrix, CL_TRUE, 0, output_matrix.getVector().size() * sizeof(float), output_matrix.data.data());
+
+    input_matrix->getVector() = output_matrix.getVector();
 
     return error_code;
 }

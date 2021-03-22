@@ -5,7 +5,6 @@
 #include <Windows.h>
 
 int Tester::test_number = 1;
-Tester::Tester(){}
 
 std::vector<Matrix> Tester::readMatrixFromFile(const std::string& filepath)
 {
@@ -28,7 +27,7 @@ std::vector<Matrix> Tester::readMatrixFromFile(const std::string& filepath)
         "In file: " + filepath + "\nUnable to read values: n k m";
     }
 
-    float* m1 = (float*)malloc(sizeof(float) * n * k);
+    float* m1 = new float[n * k];
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < k; j++)
@@ -53,7 +52,7 @@ std::vector<Matrix> Tester::readMatrixFromFile(const std::string& filepath)
         }
     }
 
-    float* m2 = (float*)malloc(sizeof(float) * k * m);
+    float* m2 = new float[k * m];
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < k; j++)
@@ -77,7 +76,7 @@ std::vector<Matrix> Tester::readMatrixFromFile(const std::string& filepath)
         }
     }
 
-    float* m3 = (float*)malloc(sizeof(float) * k * m);
+    float* m3 = new float[k * m];
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < k; j++)
@@ -106,9 +105,9 @@ std::vector<Matrix> Tester::readMatrixFromFile(const std::string& filepath)
     vector.push_back(matrix2);
     vector.push_back(matrix3);
 
-    free(m1);
-    free(m2);
-    free(m3);
+    delete[] m1;
+    delete[] m2;
+    delete[] m3;
 
     return vector;
 }

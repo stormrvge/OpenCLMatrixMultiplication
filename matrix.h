@@ -6,15 +6,10 @@
 class Matrix
 {
 public:
-	Matrix(int col_size, int row_size)
-	{
-		this->col_size = col_size;
-		this->row_size = row_size;
-		this->matrix_size = row_size * col_size;
-	}
+	Matrix(int col_size, int row_size) : col_size(col_size), row_size(row_size), matrix_size(row_size * col_size) {}
 
 	void fillRandMatrix();
-	static Matrix multiplicate(Matrix matrix1, Matrix matrix);
+	static Matrix multiplicate(const Matrix matrix1, const Matrix matrix);
 	void printMatrix() const;
 	int getMatrixSize() const;
 	int getRowSize() const;

@@ -34,6 +34,8 @@ Matrix Matrix::multiplicate(Matrix matrix1, Matrix matrix2)
     int new_col = new_matrix.getColSize();
     int new_row = new_matrix.getRowSize();
 
+    float* matrix_data = new float[m1_cols * m2_rows];
+
     for (int i = 0; i < m1_rows; ++i)
     {
         for (int j = 0; j < matrix2.getColSize(); ++j)
@@ -41,11 +43,21 @@ Matrix Matrix::multiplicate(Matrix matrix1, Matrix matrix2)
             float sum = 0.0f;
             for (int k = 0; k < m1_cols; ++k)
             {
-                sum += matrix1.data.at(i * m1_cols + k) * matrix2.data.at(k * m2_cols + j);
+                sum += matrix1.data.at(i + k * m1_cols) * matrix2.data.at(k + j * m2_cols);
             }
-            new_matrix.data.push_back(sum);
+            matrix_data[i * m1_cols + j] = sum;
         }    
     } 
+
+    for (int i = 0; i < m1_cols; i++)
+    {
+        for (int j = 0; j < m2_rows; j++)
+        {
+            new_matrix.data.push_back(matrix_data[i + j * m1_rows]);
+        }
+    }
+
+    delete[] matrix_data;
 
     return new_matrix;
 }
@@ -79,7 +91,6 @@ bool Matrix::dataEquals(const Matrix matrix) const
             {
                 return false;
             }
-                
         }
     }
 
@@ -87,9 +98,7 @@ bool Matrix::dataEquals(const Matrix matrix) const
 }
 
 bool Matrix::compare_float(float x, float y, float epsilon) const {
-    if (fabs(fabs(x) - fabs(y)) < epsilon)
-        return true;
-    return false;
+    return (fabs(fabs(x) - fabs(y)) < epsilon) ? true : false;
 }
 
 
