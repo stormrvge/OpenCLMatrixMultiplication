@@ -27,23 +27,16 @@ std::vector<Matrix> Tester::readMatrixFromFile(const std::string& filepath)
         "In file: " + filepath + "\nUnable to read values: n k m";
     }
 
-    float* m1 = new float[n * k];
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < k; j++)
-        {
-            float num = 0.0f;
-            ss >> num;
-            m1[j + i * m] = num;
-        }
-    }
 
     Matrix matrix1(n, k);
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < k; j++)
         {       
-            matrix1.data.push_back(m1[i + j * k]);
+            float num = 0.0f;
+            ss >> num;
+
+            matrix1.getData()[j + i * m] = num;
 
             if (ss.fail())
             {
@@ -52,38 +45,19 @@ std::vector<Matrix> Tester::readMatrixFromFile(const std::string& filepath)
         }
     }
 
-    float* m2 = new float[k * m];
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < k; j++)
-        {
-            float num = 0.0f;
-            ss >> num;
-            m2[j + i * m] = num;
-        }
-    }
-
     Matrix matrix2(k, m);
     for (int i = 0; i < k; i++)
     {
         for (int j = 0; j < m; j++)
         {
-            matrix2.data.push_back(m2[i + j * m]);
+            float num = 0.0f;
+            ss >> num;
+
+            matrix2.getData()[j + i * m] = num;
             if (ss.fail())
             {
                 std::cout << "In file: " + filepath + "\nUnable to read value: b[" + std::to_string(i) + "][" + std::to_string(j) + "]" << std::endl;
             }
-        }
-    }
-
-    float* m3 = new float[k * m];
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < k; j++)
-        {
-            float num = 0.0f;
-            ss >> num;
-            m3[j + i * m] = num;
         }
     }
 
@@ -92,7 +66,10 @@ std::vector<Matrix> Tester::readMatrixFromFile(const std::string& filepath)
     {
         for (int j = 0; j < m; j++)
         {
-            matrix3.data.push_back(m3[i + j * m]);
+            float num = 0.0f;
+            ss >> num;
+
+            matrix3.getData()[j + i * m] = num;
             if (ss.fail())
             {
                 std::cout << "In file: " + filepath + "\nUnable to read value: c[" + std::to_string(i) + "][" + std::to_string(j) + "]" << std::endl;
@@ -104,10 +81,6 @@ std::vector<Matrix> Tester::readMatrixFromFile(const std::string& filepath)
     vector.push_back(matrix1);
     vector.push_back(matrix2);
     vector.push_back(matrix3);
-
-    delete[] m1;
-    delete[] m2;
-    delete[] m3;
 
     return vector;
 }

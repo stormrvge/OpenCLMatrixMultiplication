@@ -18,8 +18,11 @@ __kernel void vector_add(__global float* A, __global float* B, __global float* C
     {
         const int tiled_row = TS * t + row;
         const int tiled_col = TS * t + col;
-        Aloc[col][row] = A[tiled_col  * M + global_row];
+        Aloc[col][row] = A[tiled_col * M + global_row];
         Bloc[col][row] = B[global_col * K + tiled_row];
+
+        // printf("A[%d][%d]: %f\n", col, row, Aloc[col][row]);
+        // printf("B[%d][%d]: %f\n", col, row, Aloc[col][row]);
 
         barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -31,4 +34,5 @@ __kernel void vector_add(__global float* A, __global float* B, __global float* C
     }
 
     C[global_col * M + global_row] = sum;
+    // printf("C[%d][%d]: %f\n", global_col, global_row, C[global_col * M + global_row]);
 }

@@ -53,12 +53,12 @@ int KernelExecutor::execute(std::string kernel_filepath, std::string matrix_file
     cl::CommandQueue command_queue(context, devices[0], CL_QUEUE_PROFILING_ENABLE, &error_code);
 
     // Create memory buffers on the device for each vector 
-    cl::Buffer matrixA(context, CL_MEM_READ_ONLY, matrix1.getVector().size() * sizeof(float));
-    cl::Buffer matrixB(context, CL_MEM_READ_ONLY, matrix2.getVector().size() * sizeof(float));
-    cl::Buffer matrixC(context, CL_MEM_READ_WRITE, matrix3.getVector().size() * sizeof(float));
+    cl::Buffer matrixA(context, CL_MEM_READ_ONLY, matrix1.getMatrixSize() * sizeof(float));
+    cl::Buffer matrixB(context, CL_MEM_READ_ONLY, matrix2.getMatrixSize() * sizeof(float));
+    cl::Buffer matrixC(context, CL_MEM_READ_WRITE, matrix3.getMatrixSize() * sizeof(float));
 
-    error_code = command_queue.enqueueWriteBuffer(matrixA, CL_TRUE, 0, matrix1.getVector().size() * sizeof(float), matrix1.data.data());
-    error_code = command_queue.enqueueWriteBuffer(matrixB, CL_TRUE, 0, matrix2.getVector().size() * sizeof(float), matrix2.data.data());
+    error_code = command_queue.enqueueWriteBuffer(matrixA, CL_TRUE, 0, matrix1.getMatrixSize() * sizeof(float), matrix1.getData());
+    error_code = command_queue.enqueueWriteBuffer(matrixB, CL_TRUE, 0, matrix2.getMatrixSize() * sizeof(float), matrix2.getData());
 
     // Create a program from the kernel source
     cl::Program::Sources source(1, std::make_pair(sourceCode.c_str(), sourceCode.length() + 1));
@@ -91,7 +91,7 @@ int KernelExecutor::execute(std::string kernel_filepath, std::string matrix_file
 
     error_code = command_queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(global[0], global[1]), cl::NDRange(local[0], local[1]), NULL, &event);
     error_code = command_queue.finish();
-    error_code = command_queue.enqueueReadBuffer(matrixC, CL_TRUE, 0, matrix3.getVector().size() * sizeof(float), matrix3.data.data());
+    error_code = command_queue.enqueueReadBuffer(matrixC, CL_TRUE, 0, matrix3.getMatrixSize() * sizeof(float), matrix3.getData());
     
 
     cl_ulong time_start;
@@ -121,12 +121,17 @@ int KernelExecutor::execute(std::string kernel_filepath, const int matrix_cols, 
     matrix2.fillRandMatrix();
     matrix3.fillRandMatrix();
 
+    Matrix valid_matrix = Matrix::multiplicate(matrix1, matrix2);
+
+    printf("DEFAULT MATRIX\n");
+    matrix2.printMatrix();
+
     if (transposed_method)
     {
-        transposeMatrix(&matrix2, "TransposeMatrix.cl", workgroup_size);
+        transposeMatrix(&matrix2, "kernels/TransposeMatrix.cl", workgroup_size);
     }
-
-
+    
+    
     // Load the kernel source code into the array source_str
     std::ifstream sourceFile(kernel_filepath);
     std::string sourceCode(std::istreambuf_iterator<char>(sourceFile), (std::istreambuf_iterator<char>()));
@@ -153,12 +158,12 @@ int KernelExecutor::execute(std::string kernel_filepath, const int matrix_cols, 
     cl::CommandQueue command_queue(context, devices[0], CL_QUEUE_PROFILING_ENABLE, &error_code);
 
     // Create memory buffers on the device for each vector 
-    cl::Buffer matrixA(context, CL_MEM_READ_ONLY, matrix1.getVector().size() * sizeof(float));
-    cl::Buffer matrixB(context, CL_MEM_READ_ONLY, matrix2.getVector().size() * sizeof(float));
-    cl::Buffer matrixC(context, CL_MEM_READ_WRITE, matrix3.getVector().size() * sizeof(float));
+    cl::Buffer matrixA(context, CL_MEM_READ_ONLY, matrix1.getMatrixSize() * sizeof(float));
+    cl::Buffer matrixB(context, CL_MEM_READ_ONLY, matrix2.getMatrixSize() * sizeof(float));
+    cl::Buffer matrixC(context, CL_MEM_READ_WRITE, matrix3.getMatrixSize() * sizeof(float));
 
-    error_code = command_queue.enqueueWriteBuffer(matrixA, CL_TRUE, 0, matrix1.getVector().size() * sizeof(float), matrix1.data.data());
-    error_code = command_queue.enqueueWriteBuffer(matrixB, CL_TRUE, 0, matrix2.getVector().size() * sizeof(float), matrix2.data.data());
+    error_code = command_queue.enqueueWriteBuffer(matrixA, CL_TRUE, 0, matrix1.getMatrixSize() * sizeof(float), matrix1.getData());
+    error_code = command_queue.enqueueWriteBuffer(matrixB, CL_TRUE, 0, matrix2.getMatrixSize() * sizeof(float), matrix2.getData());
 
     // Create a program from the kernel source
     cl::Program::Sources source(1, std::make_pair(sourceCode.c_str(), sourceCode.length() + 1));
@@ -191,7 +196,7 @@ int KernelExecutor::execute(std::string kernel_filepath, const int matrix_cols, 
 
     error_code = command_queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(global[0], global[1]), cl::NDRange(local[0], local[1]), NULL, &event);
     error_code = command_queue.finish();
-    error_code = command_queue.enqueueReadBuffer(matrixC, CL_TRUE, 0, matrix3.getVector().size() * sizeof(float), matrix3.data.data());
+    error_code = command_queue.enqueueReadBuffer(matrixC, CL_TRUE, 0, matrix3.getMatrixSize() * sizeof(float), matrix3.getData());
 
 
     cl_ulong time_start;
@@ -204,10 +209,7 @@ int KernelExecutor::execute(std::string kernel_filepath, const int matrix_cols, 
 
 
 
-    Matrix valid_matrix = Matrix::multiplicate(matrix1, matrix2);
-
     tester.isAnswerCorrect(valid_matrix, matrix3, kernel_filepath, error_code, exec_time);
-
 
     return error_code;
 }
@@ -238,10 +240,10 @@ int KernelExecutor::transposeMatrix(Matrix* input_matrix, std::string kernel_fil
     cl::CommandQueue command_queue(context, devices[0], CL_QUEUE_PROFILING_ENABLE, &error_code);
 
     // Create memory buffers on the device for each vector
-    cl::Buffer in_matrix(context, CL_MEM_READ_ONLY, (*input_matrix).getVector().size() * sizeof(float));
-    cl::Buffer out_matrix(context, CL_MEM_READ_ONLY, output_matrix.getVector().size() * sizeof(float));
+    cl::Buffer in_matrix(context, CL_MEM_READ_ONLY, (*input_matrix).getMatrixSize() * sizeof(float));
+    cl::Buffer out_matrix(context, CL_MEM_READ_WRITE, (*input_matrix).getMatrixSize() * sizeof(float));
 
-    error_code = command_queue.enqueueWriteBuffer(in_matrix, CL_TRUE, 0, (*input_matrix).getVector().size() * sizeof(float), (*input_matrix).getVector().data());
+    error_code = command_queue.enqueueWriteBuffer(in_matrix, CL_TRUE, 0, (*input_matrix).getMatrixSize() * sizeof(float), (*input_matrix).getData());
 
     // Create a program from the kernel source
     cl::Program::Sources source(1, std::make_pair(sourceCode.c_str(), sourceCode.length() + 1));
@@ -272,9 +274,13 @@ int KernelExecutor::transposeMatrix(Matrix* input_matrix, std::string kernel_fil
     // ERROR CODE -38 || -36
     error_code = command_queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(global[0], global[1]), cl::NDRange(local[0], local[1]));
     error_code = command_queue.finish();
-    error_code = command_queue.enqueueReadBuffer(out_matrix, CL_TRUE, 0, output_matrix.getVector().size() * sizeof(float), output_matrix.data.data());
+    error_code = command_queue.enqueueReadBuffer(out_matrix, CL_TRUE, 0, (*input_matrix).getMatrixSize() * sizeof(float), output_matrix.getData());
 
-    input_matrix->getVector() = output_matrix.getVector();
+
+    printf("TRANSPOSED MATRIX\n");
+    output_matrix.printMatrix();
+
+    input_matrix->matrixDataCopy(output_matrix);
 
     return error_code;
 }

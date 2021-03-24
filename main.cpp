@@ -5,13 +5,16 @@
 
 int main()
 {
-	std::string kernel1 = "NaiveMethod.cl";
-	std::string kernel2 = "TileMethod.cl";
-	std::string kernel3 = "NaiveTransposedMethod.cl";
+	std::string kernel1 = "kernels/NaiveMethod.cl";
+	std::string kernel2 = "kernels/TileMethod.cl";
+	std::string kernel3 = "kernels/NaiveTransposedMethod.cl";
+
+	const bool transposed = true;
+	const bool untransposed = false;
 
 	KernelExecutor kernel_executor;
 
-	kernel_executor.execute(kernel3, 3, 3, 1, true);
+	kernel_executor.execute(kernel3, 3, 3, 1, transposed);
 
 	//kernel_executor.execute(kernel3, 128, 128, 32);
 	//kernel_executor.execute(kernel3, 256, 256, 32);
