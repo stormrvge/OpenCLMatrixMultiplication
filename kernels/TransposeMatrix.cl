@@ -1,4 +1,4 @@
-#define TILE_SIZE 1
+#define TILE_SIZE 32
 
 __kernel void transpose(
 	__global const float* input,
@@ -24,8 +24,6 @@ __kernel void transpose(
 	buffer[local_col][local_row] = tmp;
 
 	barrier(CLK_LOCAL_MEM_FENCE);
-
-	// printf("rows: %d\ncols: %d", rows, cols);
 
 	output[col * rows + row] = buffer[local_col][local_row]; 
 }

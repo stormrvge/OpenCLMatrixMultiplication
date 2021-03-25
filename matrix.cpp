@@ -29,7 +29,7 @@ Matrix Matrix::multiplicate(Matrix matrix1, Matrix matrix2)
     {
         for (int j = 0; j < matrix2.getColSize(); ++j)
         {
-            float sum = 0.0f;
+            double sum = 0.0f;
             for (int k = 0; k < m1_cols; ++k)
             {
                 sum += matrix1.data.at(i + k * m1_cols) * matrix2.data.at(k + j * m2_cols);
@@ -86,7 +86,7 @@ bool Matrix::dataEquals(const Matrix matrix) const
     return true;
 }
 
-bool Matrix::compare_float(float x, float y, float epsilon) const {
+bool Matrix::compare_float(double x, double y, double epsilon) const {
     return (fabs(fabs(x) - fabs(y)) < epsilon) ? true : false;
 }
 
@@ -107,7 +107,7 @@ int Matrix::getColSize() const
     return col_size;
 }
 
-float* Matrix::getData()
+double* Matrix::getData()
 {
     return data.data();
 }

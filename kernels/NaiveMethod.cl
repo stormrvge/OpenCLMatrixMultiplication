@@ -1,4 +1,4 @@
-__kernel void vector_add(__global float* A, __global float* B, __global float* C, 
+__kernel void vector_add(__global double* A, __global double* B, __global double* C, 
 						const int M, const int N, const int K) 
 {
 	int row = get_global_id(0); 
@@ -6,11 +6,11 @@ __kernel void vector_add(__global float* A, __global float* B, __global float* C
  
 	// value stores the element that is 
 	// computed by the thread
-	float value = 0.0f;
+	double value = 0.0f;
 	for (int k = 0; k < K; ++k)
 	{
-		float elementA = A[row + k * M];
-		float elementB = B[k + col * K];
+		double elementA = A[row + k * M];
+		double elementB = B[k + col * K];
 		value += elementA * elementB;
 	}
  

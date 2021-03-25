@@ -1,56 +1,25 @@
-#include "kernelExecutor.h"
 #include <string>
 #include <iostream>
 
+#include "kernelExecutor.h"
+#include "tester.h"
 
 int main()
 {
-	std::string kernel1 = "kernels/NaiveMethod.cl";
-	std::string kernel2 = "kernels/TileMethod.cl";
-	std::string kernel3 = "kernels/NaiveTransposedMethod.cl";
+	Tester tester;
+	std::vector<std::string> multiplication_kernels;
+	multiplication_kernels.push_back("kernels/NaiveMethod.cl");
+	multiplication_kernels.push_back("kernels/TileMethod.cl");
 
-	const bool transposed = true;
-	const bool untransposed = false;
+	std::vector<std::string> transpose_kernels;
+	transpose_kernels.push_back("kernels/TransposeMatrix.cl");
 
-	KernelExecutor kernel_executor;
+	int start_colsize = 64;
+	int start_rowsize = 64;
+	int number_of_tests = 64;
 
-	kernel_executor.execute(kernel3, 3, 3, 1, transposed);
-
-	//kernel_executor.execute(kernel3, 128, 128, 32);
-	//kernel_executor.execute(kernel3, 256, 256, 32);
-	//kernel_executor.execute(kernel3, 512, 512, 32);
-	////kernel_executor.execute(kernel3, 1024, 1024, 32);
-
-	//kernel_executor.execute(kernel1, 128, 128, 32);
-	//kernel_executor.execute(kernel1, 256, 256, 32);
-	//kernel_executor.execute(kernel1, 512, 512, 32);
-	////kernel_executor.execute(kernel1, 1024, 1024, 32);
-
-	
-
-	// kernel_executor.execute(kernel1, 2048, 2048, 32);
-	// kernel_executor.execute(kernel1, 4096, 4096, 32);
-
-	//kernel_executor.execute(kernel2, 128, 128, 32);
-	//kernel_executor.execute(kernel2, 256, 256, 32);
-	//kernel_executor.execute(kernel2, 512, 512, 32);
-	//kernel_executor.execute(kernel2, 1024, 1024, 32);
-	// kernel_executor.execute(kernel2, 2048, 2048, 32);
-	// kernel_executor.execute(kernel2, 4096, 4096, 32); 
-
-
-	// TESTS FROM FILE
-	//std::cout << "TESTS FROM FILE" << std::endl;
-	//kernel_executor.execute(kernel1, "D:\\t256.txt", 32);
-	//kernel_executor.execute(kernel1, "D:\\t512.txt", 32);
-	//kernel_executor.execute(kernel1, "D:\\t1024.txt", 32);
-	//kernel_executor.execute(kernel1, "D:\\t2048.txt", 32);
-
-	//kernel_executor.execute(kernel2, "D:\\t256.txt", 32);
-	//kernel_executor.execute(kernel2, "D:\\t512.txt", 32);
-	//kernel_executor.execute(kernel2, "D:\\t1024.txt", 32);
-	//kernel_executor.execute(kernel2, "D:\\t2048.txt", 32);
-
+	tester.testMultiplicationKernels(multiplication_kernels, number_of_tests, start_colsize, start_rowsize);
+	tester.testTranposingKernels(transpose_kernels, number_of_tests + 3, start_colsize, start_rowsize);
 
 	return 0;
 }

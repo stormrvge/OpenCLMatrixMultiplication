@@ -1,8 +1,10 @@
-#include "tester.h"
 #include <fstream>
 #include <sstream>
 #include <iostream>
 #include <Windows.h>
+
+#include "tester.h"
+#include "kernelExecutor.h"
 
 int Tester::test_number = 1;
 
@@ -89,6 +91,7 @@ void Tester::isAnswerCorrect(const Matrix matrix1, const Matrix matrix2, std::st
 {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
+
     if (matrix1.dataEquals(matrix2) && error_code == 0)
     {
         printf("TEST %d: %s --- MATRIX SIZE: %dx%d --- EXECUTION TIME: %0.5f ms --- TEST ", test_number++, kernel_name.c_str(),
@@ -108,5 +111,95 @@ void Tester::isAnswerCorrect(const Matrix matrix1, const Matrix matrix2, std::st
         {
             printf("TEST %d: ERROR_CODE: %d\n", test_number - 1, error_code);
         }
+    }
+}
+
+
+int Tester::testMultiplicationKernels(std::vector<std::string> kernels, int num_of_test, int col_size, int row_size)
+{
+    KernelExecutor kernel_executor;
+    std::vector<Matrix> matrixes;
+
+    int start_col = col_size;
+    int start_row = row_size;
+
+    int error_code = 0;
+    
+    std::cout << "--- RUNTIME TESTS ---" << std::endl;
+    for (int i = 0; i < kernels.size(); i++)
+    {
+        for (int j = 0; j < num_of_test; j++)
+        {
+            generateMatrixes(&matrixes, col_size, row_size);
+            error_code = kernel_executor.matrixMultiplicate(&matrixes, kernels[i], 32);
+            row_size += 32;
+            col_size += 32;
+        }
+
+        row_size = start_row;
+        col_size = start_col;
+
+        if (error_code != 0)
+        {
+            printf("--- ERROR ---\n--- CODE OF ERROR: [%d] ---", error_code);
+            break;
+        }
+    }
+
+    // TESTS FROM FILE
+    //std::cout << "TESTS FROM FILE" << std::endl;
+    //kernel_executor.matrixMultiplicate(kernel1, "D:\\t256.txt", 32);
+    //kernel_executor.matrixMultiplicate(kernel1, "D:\\t512.txt", 32);
+    //kernel_executor.matrixMultiplicate(kernel1, "D:\\t1024.txt", 32);
+    //kernel_executor.matrixMultiplicate(kernel1, "D:\\t2048.txt", 32);
+
+    //kernel_executor.matrixMultiplicate(kernel2, "D:\\t256.txt", 32);
+    //kernel_executor.matrixMultiplicate(kernel2, "D:\\t512.txt", 32);
+    //kernel_executor.matrixMultiplicate(kernel2, "D:\\t1024.txt", 32);
+    //kernel_executor.matrixMultiplicate(kernel2, "D:\\t2048.txt", 32);
+
+    return error_code;
+}
+
+int Tester::testTranposingKernels(std::vector<std::string> kernels, int num_of_tests, int col_size, int row_size)
+{
+    KernelExecutor kernel_executor;
+    int start_col = col_size;
+    int start_row = row_size;
+    int error_code = 0;
+
+    std::cout << "--- RUNTIME TESTS ---" << std::endl;
+    for (int i = 0; i < kernels.size(); i++)
+    {
+        for (int j = 0; j < num_of_tests; j++)
+        {
+            Matrix random_matrix(col_size, row_size);
+            random_matrix.fillRandMatrix();
+            error_code = kernel_executor.matrixTranspose(&random_matrix, kernels[i], 32);
+            row_size += 32;
+            col_size += 32;
+        }
+
+        row_size = start_row;
+        col_size = start_col;
+
+        if (error_code != 0)
+        {
+            printf("--- ERROR ---\n--- CODE OF ERROR: [%d] ---", error_code);
+            break;
+        }
+    }
+
+    return error_code;
+}
+
+void Tester::generateMatrixes(std::vector<Matrix>* matrixes, int cols_size, int row_size)
+{
+    matrixes->clear();
+
+    for (int i = 0; i < 3; i++)
+    {
+        (*matrixes).push_back(Matrix(cols_size, row_size));
+        (*matrixes)[i].fillRandMatrix();
     }
 }

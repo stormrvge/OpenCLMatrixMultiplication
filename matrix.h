@@ -15,16 +15,16 @@ public:
 	int getMatrixSize() const;
 	int getRowSize() const;
 	int getColSize() const;
-	float* getData();
+	double* getData();
 	bool dataEquals(Matrix matrix) const;
 
 private:
-	bool compare_float(float x, float y, float epsilon = 5.00f) const;
+	bool compare_float(double x, double y, double epsilon = 5.00f) const;
 
 	int row_size;
 	int col_size;
 	int matrix_size;
-	std::vector<float> data;	
+	std::vector<double> data;	
 };
 
 #endif // !MATRIX_MULTIPLICATION_H
