@@ -14,7 +14,7 @@ public:
 
 private:
 	static int test_number;
-	void generateMatrixes(std::vector<Matrix> *matrixes, int cols_size, int row_size);
+	void generateMatrixes(std::vector<Matrix> &matrixes, int cols_size, int row_size);
 };
 
 #endif // !MATRIX_MULTIPLICATION_TESTER

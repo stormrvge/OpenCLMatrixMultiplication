@@ -8,22 +8,22 @@ class Matrix
 public:
 	Matrix(int col_size, int row_size);
 
-	static Matrix multiplicate(const Matrix matrix1, const Matrix matrix);
+	static Matrix multiplicate(const Matrix &matrix1, const Matrix &matrix);
 	void fillRandMatrix();
 	void printMatrix() const;
 	int getMatrixSize() const;
 	int getRowSize() const;
 	int getColSize() const;
-	double* getData();
+	float* getData();
 	bool dataEquals(Matrix matrix) const;
 
 private:
-	bool compare_float(double x, double y, double epsilon = 5.00f) const;
+	bool compare_float(float x, float y, float epsilon = 5.00f) const;
 
 	int row_size;
 	int col_size;
 	int matrix_size;
-	std::vector<double> data;	
+	std::vector<float> data;
 };
 
 #endif // !MATRIX_MULTIPLICATION_H

@@ -14,7 +14,7 @@ void Matrix::fillRandMatrix()
     }
 }
 
-Matrix Matrix::multiplicate(Matrix matrix1, Matrix matrix2)
+Matrix Matrix::multiplicate(const Matrix &matrix1, const Matrix &matrix2)
 {
     int m1_cols = matrix1.getColSize();
     int m2_cols = matrix2.getColSize();
@@ -29,10 +29,10 @@ Matrix Matrix::multiplicate(Matrix matrix1, Matrix matrix2)
     {
         for (int j = 0; j < matrix2.getColSize(); ++j)
         {
-            double sum = 0.0f;
+            float sum = 0.0f;
             for (int k = 0; k < m1_cols; ++k)
             {
-                sum += matrix1.data.at(i + k * m1_cols) * matrix2.data.at(k + j * m2_cols);
+                sum += matrix1.data[i + k * m1_cols] * matrix2.data[k + j * m2_cols];
             }
             new_matrix.data[i + j * m1_cols] = sum;
         }    
@@ -48,7 +48,7 @@ void Matrix::printMatrix() const
     {
         for (int j = 0; j < col_size; j++)
         {
-            printf("%0.1f ", data.at(i * row_size + j));
+            printf("%0.1f ", data[i * row_size + j]);
         }
         printf("\n");
     }
@@ -66,7 +66,7 @@ bool Matrix::dataEquals(const Matrix matrix) const
     {
         for (int j = 0; j < rows; j++)
         {
-            if (!compare_float(matrix.data.at(i * cols + j), data.at(i * cols + j)))
+            if (!compare_float(matrix.data[i * cols + j], data[i * cols + j]))
             {
                 return false;
             }
@@ -76,8 +76,8 @@ bool Matrix::dataEquals(const Matrix matrix) const
     return true;
 }
 
-bool Matrix::compare_float(double x, double y, double epsilon) const {
-    return (fabs(fabs(x) - fabs(y)) < epsilon) ? true : false;
+bool Matrix::compare_float(float x, float y, float epsilon) const {
+    return std::abs(x - y) <= std::max(std::abs(x), std::abs(y)) * std::numeric_limits<float>::epsilon();
 }
 
 
@@ -97,7 +97,7 @@ int Matrix::getColSize() const
     return col_size;
 }
 
-double* Matrix::getData()
+float* Matrix::getData()
 {
     return data.data();
 }

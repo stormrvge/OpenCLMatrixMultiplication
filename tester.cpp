@@ -130,8 +130,13 @@ int Tester::testMultiplicationKernels(std::vector<std::string> kernels, int num_
     {
         for (int j = 0; j < num_of_test; j++)
         {
-            generateMatrixes(&matrixes, col_size, row_size);
-            error_code = kernel_executor.matrixMultiplicate(&matrixes, kernels[i], 32);
+            double exec_time = 0;
+            generateMatrixes(matrixes, col_size, row_size);
+            error_code = kernel_executor.matrixMultiplicate(matrixes[0], matrixes[1], matrixes[2], kernels[i], exec_time);
+
+            Matrix valid_matrix = Matrix::multiplicate(matrixes[0], matrixes[1]);
+
+            isAnswerCorrect(valid_matrix, matrixes[2], kernels[i], error_code, exec_time);
             row_size += 32;
             col_size += 32;
         }
@@ -175,7 +180,7 @@ int Tester::testTranposingKernels(std::vector<std::string> kernels, int num_of_t
         {
             Matrix random_matrix(col_size, row_size);
             random_matrix.fillRandMatrix();
-            error_code = kernel_executor.matrixTranspose(&random_matrix, kernels[i], 32);
+            error_code = kernel_executor.matrixTranspose(random_matrix, kernels[i], 32);
             row_size += 32;
             col_size += 32;
         }
@@ -193,13 +198,16 @@ int Tester::testTranposingKernels(std::vector<std::string> kernels, int num_of_t
     return error_code;
 }
 
-void Tester::generateMatrixes(std::vector<Matrix>* matrixes, int cols_size, int row_size)
+void Tester::generateMatrixes(std::vector<Matrix> &matrixes, int cols_size, int row_size)
 {
-    matrixes->clear();
+    matrixes.clear();
 
     for (int i = 0; i < 3; i++)
     {
-        (*matrixes).push_back(Matrix(cols_size, row_size));
-        (*matrixes)[i].fillRandMatrix();
+        matrixes.push_back(Matrix(cols_size, row_size));
+        if (i != 2)
+        {
+            matrixes[i].fillRandMatrix();
+        } 
     }
 }
