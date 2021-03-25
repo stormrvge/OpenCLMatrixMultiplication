@@ -41,16 +41,6 @@ Matrix Matrix::multiplicate(Matrix matrix1, Matrix matrix2)
     return new_matrix;
 }
 
-void Matrix::matrixDataCopy(const Matrix input_matrix)
-{
-    for (int i = 0; i < col_size; i++)
-    {
-        for (int j = 0; j < row_size; j++)
-        {
-            data[i * row_size + j] = input_matrix.data[i * row_size + j];
-        }
-    }
-}
 
 void Matrix::printMatrix() const
 {

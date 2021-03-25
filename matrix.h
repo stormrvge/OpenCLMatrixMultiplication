@@ -10,7 +10,6 @@ public:
 
 	static Matrix multiplicate(const Matrix matrix1, const Matrix matrix);
 	void fillRandMatrix();
-	void matrixDataCopy(const Matrix input_matrix);
 	void printMatrix() const;
 	int getMatrixSize() const;
 	int getRowSize() const;

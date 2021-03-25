@@ -28,9 +28,7 @@ int KernelExecutor::matrixMultiplicate(std::string kernel_filepath, std::string 
 
     Matrix matrix1 = tested_matrixes[0];
     Matrix matrix2 = tested_matrixes[1];
-
-    Matrix matrix3(tested_matrixes[2].getColSize(), tested_matrixes[2].getRowSize());
-    matrix3.matrixDataCopy(tested_matrixes[2]);
+    Matrix matrix3 = tested_matrixes[2];
 
     error_code = matrixMultiplicate(kernel_filepath, &tested_matrixes, workgroup_size, exec_time);
     tester.isAnswerCorrect(tested_matrixes[2], matrix3, kernel_filepath, error_code, exec_time);
@@ -197,7 +195,7 @@ int KernelExecutor::matrixTranspose(Matrix* input_matrix, std::string kernel_fil
 
     error_code = command_queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(global[0], global[1]), cl::NDRange(local[0], local[1]), NULL, &event);
     error_code = command_queue.finish();
-    error_code = command_queue.enqueueReadBuffer(out_matrix, CL_TRUE, 0, (*input_matrix).getMatrixSize() * sizeof(double), output_matrix.getData());
+    error_code = command_queue.enqueueReadBuffer(out_matrix, CL_TRUE, 0, (*input_matrix).getMatrixSize() * sizeof(float), output_matrix.getData());
 
     cl_ulong time_start;
     cl_ulong time_end;
@@ -209,7 +207,7 @@ int KernelExecutor::matrixTranspose(Matrix* input_matrix, std::string kernel_fil
 
     printf("Tranpose: Matrix size (%dx%d) execution_time - %0.5f ms.\n", input_matrix->getColSize(), input_matrix->getRowSize(), exec_time);
 
-    input_matrix->matrixDataCopy(output_matrix);
+    *input_matrix = output_matrix;
 
     return error_code;
 }
