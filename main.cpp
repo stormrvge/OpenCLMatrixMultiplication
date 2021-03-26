@@ -18,7 +18,7 @@ int main()
 	int start_rowsize = 64;
 	int number_of_tests = 64;
 
-	tester.testMultiplicationKernels(multiplication_kernels, number_of_tests, start_colsize, start_rowsize);
+	// tester.testMultiplicationKernels(multiplication_kernels, number_of_tests, start_colsize, start_rowsize);
 	tester.testTranposingKernels(transpose_kernels, number_of_tests + 3, start_colsize, start_rowsize);
 
 	return 0;

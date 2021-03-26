@@ -3,6 +3,7 @@
 #include <iostream>
 #include <Windows.h>
 
+
 #include "tester.h"
 #include "kernelExecutor.h"
 
@@ -87,7 +88,7 @@ std::vector<Matrix> Tester::readMatrixFromFile(const std::string& filepath)
     return vector;
 }
 
-void Tester::isAnswerCorrect(const Matrix matrix1, const Matrix matrix2, std::string kernel_name, const int error_code, const double exec_time) const
+void Tester::isMultiplicationCorrect(const Matrix &matrix1, const Matrix &matrix2, std::string kernel_name, const int error_code, const double exec_time) const
 {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
@@ -136,7 +137,7 @@ int Tester::testMultiplicationKernels(std::vector<std::string> kernels, int num_
 
             Matrix valid_matrix = Matrix::multiplicate(matrixes[0], matrixes[1]);
 
-            isAnswerCorrect(valid_matrix, matrixes[2], kernels[i], error_code, exec_time);
+            isMultiplicationCorrect(valid_matrix, matrixes[2], kernels[i], error_code, exec_time);
             row_size += 32;
             col_size += 32;
         }
@@ -166,6 +167,48 @@ int Tester::testMultiplicationKernels(std::vector<std::string> kernels, int num_
     return error_code;
 }
 
+void Tester::isTransposingCorrect(Matrix& input_matrix, Matrix& output_matrix, std::string kernel_name, const int error_code, const double exec_time) const
+{
+    bool is_correct = true;
+    int col_size = input_matrix.getColSize();
+    int row_size = input_matrix.getRowSize();
+
+    for (int i = 0; i < col_size; i++)
+    {
+        for (int j = 0; j < row_size; j++)
+        {
+            if (!compare_float(input_matrix.getData()[i * col_size + j], output_matrix.getData()[i + j * col_size]))
+            {
+                is_correct = false;
+                break;
+            }
+        }
+        if (!is_correct) break;
+    }
+
+
+    if (is_correct && error_code == 0)
+    {
+        printf("TEST %d: %s --- MATRIX SIZE: %dx%d --- EXECUTION TIME: %0.5f ms --- TEST ", test_number++, kernel_name.c_str(),
+            input_matrix.getColSize(), input_matrix.getColSize(), exec_time);
+        // SetConsoleTextAttribute(hConsole, 10);
+        std::cout << "<OK>" << std::endl;
+        // SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 0);
+    }
+    else
+    {
+        printf("TEST %d: %s --- MATRIX SIZE: %dx%d --- EXECUTION TIME: %0.5f ms --- TEST ", test_number++, kernel_name.c_str(),
+            input_matrix.getColSize(), input_matrix.getColSize(), exec_time);
+        // SetConsoleTextAttribute(hConsole, 12);
+        std::cout << "<FAILED>" << std::endl;
+        // SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 0);
+        if (error_code != 0)
+        {
+            printf("TEST %d: ERROR_CODE: %d\n", test_number - 1, error_code);
+        }
+    }
+}
+
 int Tester::testTranposingKernels(std::vector<std::string> kernels, int num_of_tests, int col_size, int row_size)
 {
     KernelExecutor kernel_executor;
@@ -173,14 +216,20 @@ int Tester::testTranposingKernels(std::vector<std::string> kernels, int num_of_t
     int start_row = row_size;
     int error_code = 0;
 
-    std::cout << "--- RUNTIME TESTS ---" << std::endl;
+    std::cout << "--- RUNTIME TESTS MATRIX TRANSPOSING ---" << std::endl;
     for (int i = 0; i < kernels.size(); i++)
     {
         for (int j = 0; j < num_of_tests; j++)
         {
+            double exec_time = 0;
             Matrix random_matrix(col_size, row_size);
             random_matrix.fillRandMatrix();
-            error_code = kernel_executor.matrixTranspose(random_matrix, kernels[i], 32);
+            Matrix source_matrix = random_matrix;
+            error_code = kernel_executor.matrixTranspose(random_matrix, kernels[i], exec_time);
+
+            isTransposingCorrect(source_matrix, random_matrix, kernels[i], error_code, exec_time);
+
+
             row_size += 32;
             col_size += 32;
         }
@@ -211,3 +260,9 @@ void Tester::generateMatrixes(std::vector<Matrix> &matrixes, int cols_size, int 
         } 
     }
 }
+
+bool Tester::compare_float(float x, float y, float epsilon) const
+{
+    return fabs(x - y) <= epsilon;
+}
+

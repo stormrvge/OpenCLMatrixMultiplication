@@ -31,7 +31,7 @@ int KernelExecutor::matrixMultiplicate(std::string kernel_filepath, std::string 
     Matrix matrix3 = tested_matrixes[2];
 
     error_code = matrixMultiplicate(kernel_filepath, tested_matrixes[0], tested_matrixes[1], tested_matrixes[2], exec_time);
-    tester.isAnswerCorrect(tested_matrixes[2], matrix3, kernel_filepath, error_code, exec_time);
+    tester.isMultiplicationCorrect(tested_matrixes[2], matrix3, kernel_filepath, error_code, exec_time);
 
     return error_code;
 }
@@ -129,7 +129,7 @@ int KernelExecutor::matrixMultiplicate(std::string kernel_filepath, Matrix &matr
     return error_code;
 }
 
-int KernelExecutor::matrixTranspose(Matrix &input_matrix, std::string kernel_filepath, int workgroup_size)
+int KernelExecutor::matrixTranspose(Matrix &input_matrix, std::string kernel_filepath, double &exec_time)
 {
     Matrix output_matrix(input_matrix.getColSize(), input_matrix.getRowSize());
 
@@ -184,7 +184,7 @@ int KernelExecutor::matrixTranspose(Matrix &input_matrix, std::string kernel_fil
 
 
     // Execute the OpenCL kernel on the list
-    const int TS = workgroup_size;
+    const int TS = 32;
     const size_t local[2] = { TS, TS };
     const size_t global[2] = { COLS, ROWS };
 
@@ -198,10 +198,7 @@ int KernelExecutor::matrixTranspose(Matrix &input_matrix, std::string kernel_fil
     event.getProfilingInfo(CL_PROFILING_COMMAND_START, &time_start);
     event.getProfilingInfo(CL_PROFILING_COMMAND_END, &time_end);
 
-    double exec_time = (time_end - time_start) / 1000000.0;
-
-    printf("Tranpose: Matrix size (%dx%d) execution_time - %0.5f ms.\n", input_matrix.getColSize(), input_matrix.getRowSize(), exec_time);
-
+    exec_time = (time_end - time_start) / 1000000.0;
     input_matrix = output_matrix;
 
     return error_code;

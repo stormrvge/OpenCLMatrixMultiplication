@@ -76,7 +76,8 @@ bool Matrix::dataEquals(const Matrix matrix) const
     return true;
 }
 
-bool Matrix::compare_float(float x, float y, float epsilon) const {
+bool Matrix::compare_float(float x, float y, float epsilon) const 
+{
     return std::abs(x - y) <= std::max(std::abs(x), std::abs(y)) * std::numeric_limits<float>::epsilon();
 }
 
